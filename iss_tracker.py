@@ -50,11 +50,9 @@ def parseXML(xmlfile: str) -> list:
 loadISS()
 data = parseXML('iss_oem.xml')
 
-# new stuff
 with open('iss_oem.xml', 'r') as f:
     big_data = xmltodict.parse(f.read())
-
-# combine with epochs 
+ 
 @app.route('/epochs', methods=['GET'])
 def epochs():
         """
@@ -104,11 +102,10 @@ def instantaneous_speed(epoch: str):
         for item in data:
                 if item['epoch'] == epoch_datetime:
                         speed = math.sqrt(item['x_dot']**2 + item['y_dot']**2 + item['z_dot']**2)
-                        return str(speed)
+                        return str(speed) + ' km/s\n'
         
         return 'epoch not found\n'
 
-# add the location calculation
 @app.route('/now', methods=['GET'])
 def nearest_epoch():
         """
@@ -116,7 +113,9 @@ def nearest_epoch():
         """
         time_now = datetime.utcnow()
         closest_epoch = min(data, key=lambda x: abs(x['epoch'] - time_now))
-        location_now = calculate_location(closest_epoch['epoch'], closest_epoch['x'], closest_epoch['y'], closest_epoch['z']) 
+        location_now = calculate_location(closest_epoch['epoch'], closest_epoch['x'], closest_epoch['y'], closest_epoch['z'])
+        speed_now = math.sqrt(closest_epoch['x_dot']**2 + closest_epoch['y_dot']**2 + closest_epoch['z_dot']**2)
+        location_now['speed'] = speed_now
         return jsonify(location_now)
         
 @app.route('/comment', methods=['GET'])
@@ -181,7 +180,7 @@ def location(epoch):
                         z = item['z']
                         
                         location_info = calculate_location(epoch, x, y, z)
-                        return jsonify(location_info)
+        return jsonify(location_info)
 
 def calculate_location(epoch, x, y, z):
     """
@@ -202,12 +201,31 @@ def calculate_location(epoch, x, y, z):
     gcrs = coord.GCRS(cartrep, obstime=now)
     itrs = gcrs.transform_to(coord.ITRS(obstime=now))
     loc = coord.EarthLocation(*itrs.cartesian.xyz)
-
+    
     latitude = loc.lat.deg
     longitude = loc.lon.deg
     altitude = loc.height.to(u.km).value
+    
+    geolocator = Nominatim(user_agent='iss_tracker')
+    try:
+            geoloc = geolocator.reverse((latitude, longitude), zoom=15, language='en')
+            geoposition = {
+                    "town": geoloc.raw.get("address", {}).get("town"),
+                    "city": geoloc.raw.get("address", {}).get("city"),
+                    "region": geoloc.raw.get("address", {}).get("region"),
+                    "state": geoloc.raw.get("address", {}).get("state"),
+                    "country": geoloc.raw.get("address", {}).get("country"),
+            }
+    except AttributeError:   # handling cases when it is over the ocean 
+            geoposition = None
 
-    return {'latitude': latitude, 'longitude': longitude, 'altitude': altitude}
+
+    return {
+        "latitude": latitude,
+        "longitude": longitude,
+        "altitude": altitude,
+        "geoposition": geoposition
+    }
                         
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')            
