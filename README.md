@@ -91,6 +91,16 @@ To interact with the Flask API, use `curl` commmands as shown below:
 * `/now` route returns the instantaneous speed, latitude, longitude, and altitude of the epoch nearest in time from when the command is "curled" 
 
 ### Examples
+Provided below are some screenshots of a few of the routes and the triggered responses when interacting with the Flask App:
+![header](https://github.com/nicoleolv/flask-app/assets/142863540/89722cc7-d64f-4172-b89a-c1994d790e2d)
+
+![specific_epoch](https://github.com/nicoleolv/flask-app/assets/142863540/56fa0d60-7a57-4c0e-a30a-5d3264cda99b)
+
+![range_epochs](https://github.com/nicoleolv/flask-app/assets/142863540/4a86767e-8801-42b0-a612-1cd940d4db0b)
+
+![location](https://github.com/nicoleolv/flask-app/assets/142863540/2cfd4616-8ad3-400a-a301-79be0cf51a87)
+
+![now](https://github.com/nicoleolv/flask-app/assets/142863540/4e287ce1-0ef8-4a3d-92cf-ac8e7ccc4533)
 
 ## Overview 
 Overall, this Flask Web Application returns summary statistics on ISS trajectory data. The interactive `iss_tracker.py` script provide a series of statistics that help the user gain clarity on the ISS trajectory data. The whole data may be returned, a modified list of the data, instantaneous speed of a specific epoch, only a specific dictionary in the data, state vectors and location of an epoch, and much more. All is based on user interactive user input. Please note that 'diagram.png' provides a visual overview of this project.  
