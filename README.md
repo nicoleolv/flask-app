@@ -45,48 +45,49 @@ docker run <username>/flask-iss-tracker:1.0 /usr/local/bin/pytest -vv /app/test_
 To interact with the Flask API, use `curl` commmands as shown below:
 * To fetch the comments:
   ```python
-  curl /comment
+  curl http://129.114.37.110:5000/comment
   ```
 * To fetch the header:
   ```python
-  curl /header
+  curl http://129.114.37.110:5000/header
   ```
 * To fetch the metadata:
   ```python
-  curl /metadata
+  curl http://129.114.37.110:5000/metadata
   ```
 * To fetch all epochs:
   ```python
-  curl /epochs
+  curl http://129.114.37.110:5000/epochs
   ```
 * To fetch a specific epoch:
   ```python
-  curl /epochs/
+  curl http://129.114.37.110:5000/epochs/2024-068T11:20:00.000Z
   ```
 * To fetch a specific range of epochs (given query parameters):
   ```python
-  curl /epochs?limit=3&offset=1
+  curl http://129.114.37.110:5000/epochs?limit=3&offset=1
   ```
 * To fetch the instantaneous speed of a specific epoch:
   ```python
-  curl /epochs/<>/speed
+  curl http://129.114.37.110:5000/epochs/2024-068T11:20:00.000Z/speed
   ```
 * To fetch the location of a specific epoch:
   ```python
-  curl /epochs/<>/location
+  curl http://129.114.37.110:5000/epochs/2024-068T11:20:00.000Z/location
   ```
 * To fetch the instantaneous speed and location of the epoch nearest in time:
   ```python
-  curl /now
+  curl http://129.114.37.110:5000/now
   ```
 ## Interpreting the Output 
 * `/comment` route returns the list of comments provided by the ISS data, including information about units, mass, drag coefficient, and much more.
 * `/header` route returns the header of the ISS data including creation date and originator.
 * `/metadata` route returns the dictionary in the ISS data that provides the object name, id, start time, end time, and a few other insights.
 * `/epochs` route returns a dictionary of all the epoch's statevectors, including position (x, y, z) and velocities (x_dot, y_dot, z_dot)
-* `/epochs?limit=3&offset=1` route returns a dictionary of a specific number of epochs (specified by limit) starting at a certain epoch (specified by offset).
-* `/epochs/<>/speed` route returns the instantaneous speed, in km/s, of the specified epoch
-* `/epochs/<>/location` route returns the longitude, latitude, and altitude of the specified epoch
+* `/epochs/<2024-068T11:20:00.000Z>` route returns the statevectors, including position (x, y, z) and velocities (x_dot, y_dot, z_dot) of a specific epoch 
+* `/epochs?limit=<3>&offset=<1>` route returns a dictionary of a specific number of epochs (specified by limit) starting at a certain epoch (specified by offset).
+* `/epochs/<2024-068T11:20:00.000Z>/speed` route returns the instantaneous speed, in km/s, of the specified epoch
+* `/epochs/<2024-068T11:20:00.000Z>/location` route returns the longitude, latitude, and altitude of the specified epoch
 * `/now` route returns the instantaneous speed, latitude, longitude, and altitude of the epoch nearest in time from when the command is "curled" 
 
 ### Examples
