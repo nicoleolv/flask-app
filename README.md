@@ -42,8 +42,54 @@ To run unit tests inside the container, execute this command:
 docker run <username>/flask-iss-tracker:1.0 /usr/local/bin/pytest -vv /app/test_iss_tracker.py
 ```
 ### Accessing the Routes 
-
+To interact with the Flask API, use `curl` commmands as shown below:
+* To fetch the comments:
+  ```python
+  curl /comment
+  ```
+* To fetch the header:
+  ```python
+  curl /header
+  ```
+* To fetch the metadata:
+  ```python
+  curl /metadata
+  ```
+* To fetch all epochs:
+  ```python
+  curl /epochs
+  ```
+* To fetch a specific epoch:
+  ```python
+  curl /epochs/
+  ```
+* To fetch a specific range of epochs (given query parameters):
+  ```python
+  curl /epochs?limit=3&offset=1
+  ```
+* To fetch the instantaneous speed of a specific epoch:
+  ```python
+  curl /epochs/<>/speed
+  ```
+* To fetch the location of a specific epoch:
+  ```python
+  curl /epochs/<>/location
+  ```
+* To fetch the instantaneous speed and location of the epoch nearest in time:
+  ```python
+  curl /now
+  ```
 ## Interpreting the Output 
+* `/comment` route returns the list of comments provided by the ISS data, including information about units, mass, drag coefficient, and much more.
+* `/header` route returns the header of the ISS data including creation date and originator.
+* `/metadata` route returns the dictionary in the ISS data that provides the object name, id, start time, end time, and a few other insights.
+* `/epochs` route returns a dictionary of all the epoch's statevectors, including position (x, y, z) and velocities (x_dot, y_dot, z_dot)
+* `/epochs?limit=3&offset=1` route returns a dictionary of a specific number of epochs (specified by limit) starting at a certain epoch (specified by offset).
+* `/epochs/<>/speed` route returns the instantaneous speed, in km/s, of the specified epoch
+* `/epochs/<>/location` route returns the longitude, latitude, and altitude of the specified epoch
+* `/now` route returns the instantaneous speed, latitude, longitude, and altitude of the epoch nearest in time from when the command is "curled" 
+
+### Examples
 
 ## Overview 
 Overall, this Flask Web Application returns summary statistics on ISS trajectory data. The interactive `iss_tracker.py` script provide a series of statistics that help the user gain clarity on the ISS trajectory data. The whole data may be returned, a modified list of the data, instantaneous speed of a specific epoch, only a specific dictionary in the data, state vectors and location of an epoch, and much more. All is based on user interactive user input. Please note that 'diagram.png' provides a visual overview of this project.  
