@@ -54,23 +54,16 @@ data = parseXML('iss_oem.xml')
 with open('iss_oem.xml', 'r') as f:
     big_data = xmltodict.parse(f.read())
 
-@app.route('/epochs', methods=['GET'])
-def get_epochs():
-        """
-        Returns entire data set
-        """
-        return jsonify(data)   # converts into json type
-
 # combine with epochs 
 @app.route('/epochs', methods=['GET'])
 def epochs():
         """
         Returns a modified list of epochs given query parameters
         """
-        limit = request.args.get('limit', 10)
+        limit = request.args.get('limit', None)
         offset = request.args.get('offset', 0)
         try:
-                limit = int(limit)
+                limit = int(limit) if limit is not None else None
         except ValueError:
                 return "Invalid parameters, must be an integer"
         try:
@@ -78,20 +71,11 @@ def epochs():
         except ValueError:
                 return "Invalid parameters, must be an integer"
 
-        limit = int(limit)
-        offset = int(offset)
-
         if limit is not None:
-                return data[:limit]
-        if offset != 0:
-                return data[offset:]
-        if offset != 0 and limit is not None:
-                return data[offset:limit]
-
+                return jsonify(data[offset:offset+limit])
         else:
-                return jsonify(data)
-        
-# might need debugging 
+                return jsonify(data[offset:])
+         
 @app.route('/epochs/<epoch>', methods=['GET'])
 def specific_epoch(epoch: str) -> str:
         """
@@ -120,7 +104,7 @@ def instantaneous_speed(epoch: str):
         for item in data:
                 if item['epoch'] == epoch_datetime:
                         speed = math.sqrt(item['x_dot']**2 + item['y_dot']**2 + item['z_dot']**2)
-                        return str('speed:', speed)
+                        return str(speed)
         
         return 'epoch not found\n'
 
@@ -132,20 +116,29 @@ def nearest_epoch():
         """
         time_now = datetime.utcnow()
         closest_epoch = min(data, key=lambda x: abs(x['epoch'] - time_now))
-        location_now = calculate_location(closest_epoch, closest_epoch['x'], closest_epoch['y'], closest_epoch['z']) 
-
-# debugggg REAL BAD 
+        location_now = calculate_location(closest_epoch['epoch'], closest_epoch['x'], closest_epoch['y'], closest_epoch['z']) 
+        return jsonify(location_now)
+        
 @app.route('/comment', methods=['GET'])
 def comment():
         """
         Returns the "comments" list from the ISS data, providing important information about the whole ISS data 
         """
         comments = []
-        for element in big_data:
-                if 'COMMENT' in element:
-                        comment = element['COMMENT']
-                        comments.append({'comment': comment})
-        return jsonify(comments)
+        all_comments = []
+        if 'ndm' in big_data and 'oem' in big_data['ndm'] and 'body' in big_data['ndm']['oem']:
+                body = big_data['ndm']['oem']['body']
+                if 'segment' in body:
+                        segment = body['segment']
+                        if 'data' in segment:
+                                data = segment['data']
+                                if 'COMMENT' in data:
+                                        comments = data['COMMENT']
+                                        if not isinstance(comments, list):
+                                                comments = [comments]
+                                        all_comments.extend(comments)
+
+        return jsonify({'comments': all_comments})
 
 @app.route('/header', methods=['GET'])
 def header():
@@ -153,10 +146,10 @@ def header():
         Returns the header of the ISS data
         """
         headers = []
-        for element in big_data:
-                if 'header' in element:
-                        header = element['header']
-                        headers.append({'header': header})
+        if 'ndm' in big_data and 'oem' in big_data['ndm'] and 'oem' in big_data['ndm']:
+                oem = big_data['ndm']['oem']
+                if 'header' in oem:
+                        headers.append({'header': oem['header']})
         return jsonify(headers)
 
 @app.route('/metadata', methods=['GET'])
@@ -165,11 +158,11 @@ def metadata():
         Returns the metadata dict from the ISS data
         """
         metadata = []
-        for element in big_data:
-                if 'metadata' in element:
-                        metadata = element['metadata']
-                        metadata.append({'metadata': metadata})
-                return jsonify(metadata)
+        if 'ndm' in big_data and 'oem' in big_data['ndm'] and 'body' in big_data['ndm']['oem']:
+                body = big_data['ndm']['oem']['body']
+                if 'segment' in body and 'metadata' in body['segment']:
+                        metadata.append({'metadata': body['segment']['metadata']})
+        return jsonify(metadata)
 
 @app.route('/epochs/<epoch>/location', methods=['GET'])
 def location(epoch):
@@ -213,9 +206,8 @@ def calculate_location(epoch, x, y, z):
     latitude = loc.lat.deg
     longitude = loc.lon.deg
     altitude = loc.height.to(u.km).value
-    geoposition = loc.info('geoposition').value
 
-    return {'latitude': latitude, 'longitude': longitude, 'altitude': altitude, 'geoposition': geoposition}
+    return {'latitude': latitude, 'longitude': longitude, 'altitude': altitude}
                         
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')            
