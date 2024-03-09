@@ -98,6 +98,8 @@ Provided below are some screenshots of a few of the routes and the triggered res
 
 ![range_epochs](https://github.com/nicoleolv/flask-app/assets/142863540/4a86767e-8801-42b0-a612-1cd940d4db0b)
 
+![speed](https://github.com/nicoleolv/flask-app/assets/142863540/efaf39a4-c70f-45d8-a0a3-25d9f9eb67dc)
+
 ![location](https://github.com/nicoleolv/flask-app/assets/142863540/2cfd4616-8ad3-400a-a301-79be0cf51a87)
 
 ![now](https://github.com/nicoleolv/flask-app/assets/142863540/4e287ce1-0ef8-4a3d-92cf-ac8e7ccc4533)
